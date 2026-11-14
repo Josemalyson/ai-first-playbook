@@ -326,11 +326,11 @@ cp -r /tmp/custom-skills/pre-commit-quality-gate .claude/skills/
 cp -r /tmp/custom-skills/pre-commit-quality-gate .agents/skills/
 
 # No chat novo:
-/pre-commit-quality-gate Gere .githooks/pre-commit e .githooks/commit-msg para este repositório Go. Siga o AGENTS.md: branch no formato &lt;tipo&gt;/S-NNN-&lt;slug&gt;; sem PII e sem URL de produção como convention guards. Mantenha os limiares padrão (cobertura 90%, mutação 70%, p95 &lt; 200 ms). Cobertura: meça o código de negócio; main.go só faz o wiring do servidor e fica fora. Não faça commit.</pre></dd>
+/pre-commit-quality-gate Gere .githooks/pre-commit e .githooks/commit-msg para este repositório Go. Siga o AGENTS.md: branch no formato &lt;tipo&gt;/S-NNN-&lt;slug&gt;; sem PII e sem URL de produção como convention guards. Mantenha os limiares padrão (cobertura 90%, mutação 70%, p95 &lt; 200 ms). Não faça commit.</pre></dd>
 <dt>Resultado esperado <span class="tag-aprox">APROXIMADO</span></dt><dd><pre class="out">1. Imprime o fingerprint: Go (go.mod), runner go test, sem linter configurado, sem schema, sem Dockerfile, AGENTS.md presente, sem hooks anteriores.
 2. Lê references/go.md e resolve uma ferramenta por categoria: gitleaks, gofmt, golangci-lint, govulncheck, deadcode, modernize, guards do AGENTS.md, go mod tidy, go test com cobertura, go test -race, WireMock, gremlins, k6, buf e docker build.
 3. Gera .githooks/pre-commit a partir de scripts/template.sh, sem nenhum {{placeholder}}, e .githooks/commit-msg.
-4. Lista as ferramentas que faltam, com o comando de instalação de cada uma.</pre></dd><dt>Artefatos</dt><dd><code class="wrap">.githooks/pre-commit, .githooks/commit-msg, .claude/skills/pre-commit-quality-gate/ e .agents/skills/pre-commit-quality-gate/</code></dd><dt>Checkpoint</dt><dd>grep -c "{{" .githooks/pre-commit retorna 0. O Tech Lead lê o cabeçalho do hook, onde ficam as decisões desta geração (padrão de branch e main.go fora da cobertura). Ferramentas do ensaio: go install golang.org/x/vuln/cmd/govulncheck@v1.9.0 golang.org/x/tools/cmd/deadcode@v0.52.0 golang.org/x/tools/go/analysis/passes/modernize/cmd/modernize@v0.52.0 github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.15.0.</dd><dt>Doc oficial</dt><dd><a href="https://github.com/Josemalyson/custom-skills/tree/main/pre-commit-quality-gate" target="_blank" rel="noopener">Skill pre-commit-quality-gate (repositório público)</a> · <a href="https://github.com/Josemalyson/custom-skills/blob/main/pre-commit-quality-gate/references/go.md" target="_blank" rel="noopener">pre-commit-quality-gate: referência Go</a> · <a href="https://golangci-lint.run/" target="_blank" rel="noopener">golangci-lint</a> · <a href="https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck" target="_blank" rel="noopener">govulncheck</a></dd></dl></div>
+4. Lista as ferramentas que faltam, com o comando de instalação de cada uma.</pre></dd><dt>Artefatos</dt><dd><code class="wrap">.githooks/pre-commit, .githooks/commit-msg, .claude/skills/pre-commit-quality-gate/ e .agents/skills/pre-commit-quality-gate/</code></dd><dt>Checkpoint</dt><dd>grep -c "{{" .githooks/pre-commit retorna 0. O Tech Lead lê o cabeçalho do hook, onde ficam as decisões desta geração (padrão de branch do AGENTS.md, limiares com awk, [SKIP] sem pacote Go). Ferramentas do ensaio: go install golang.org/x/vuln/cmd/govulncheck@v1.9.0 golang.org/x/tools/cmd/deadcode@v0.52.0 golang.org/x/tools/go/analysis/passes/modernize/cmd/modernize@v0.52.0 github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.15.0.</dd><dt>Doc oficial</dt><dd><a href="https://github.com/Josemalyson/custom-skills/tree/main/pre-commit-quality-gate" target="_blank" rel="noopener">Skill pre-commit-quality-gate (repositório público)</a> · <a href="https://github.com/Josemalyson/custom-skills/blob/main/pre-commit-quality-gate/references/go.md" target="_blank" rel="noopener">pre-commit-quality-gate: referência Go</a> · <a href="https://golangci-lint.run/" target="_blank" rel="noopener">golangci-lint</a> · <a href="https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck" target="_blank" rel="noopener">govulncheck</a></dd></dl></div>
 <div class="step" id="passo-9"><div class="step-h"><span class="step-n">09</span><span class="step-t">Quality gate: ativar e dry-run</span><span class="step-f">Setup</span></div>
 <dl class="step-d"><dt>Objetivo</dt><dd>Ativar os hooks versionados e provar que eles rodam de ponta a ponta antes de existir código.</dd><dt>Entrada</dt><dd>Raiz do repositório.</dd><dt>Comando exato</dt><dd><pre>chmod +x .githooks/pre-commit .githooks/commit-msg
 git config core.hooksPath .githooks
@@ -340,9 +340,9 @@ bash .githooks/pre-commit</pre></dd>
 <dt>Resultado esperado <span class="tag-real">REAL</span></dt><dd><pre class="out">.githooks
 bash -n: ok
 [STEP -1/14] Secret Scanner — Gitleaks
-10:09AM INF 0 commits scanned.
-10:09AM INF scanned ~0 bytes (0) in 129ms
-10:09AM INF no leaks found
+10:21AM INF 0 commits scanned.
+10:21AM INF scanned ~0 bytes (0) in 115ms
+10:21AM INF no leaks found
 [PASS] Secret Scanner
 [STEP 0/14] Branch Name — &lt;tipo&gt;/S-NNN-&lt;slug&gt;
 [PASS] Branch Name
@@ -391,15 +391,15 @@ git add AGENTS.md .githooks .claude/skills/pre-commit-quality-gate .agents/skill
 git commit -m "chore(S-001): AGENTS.md e quality gate de pre-commit" \
   --trailer "Story: S-001" --trailer "AI-Assisted: bmad+&lt;agente&gt;"</pre></dd>
 <dt>Resultado esperado <span class="tag-real">REAL</span></dt><dd><pre class="out">[STEP -1/14] Secret Scanner — Gitleaks
-10:09AM INF 0 commits scanned.
-10:09AM INF scanned ~112852 bytes (112.85 KB) in 134ms
-10:09AM INF no leaks found
+10:21AM INF 0 commits scanned.
+10:21AM INF scanned ~116522 bytes (116.52 KB) in 128ms
+10:21AM INF no leaks found
 [PASS] Secret Scanner
 (… mesmos steps do dry-run: [PASS], [SKIP] e [WARN] …)
 ✓ All 14 quality gates passed — committing.
 [PASS] commit-msg: Conventional Commits
-[feat/S-001-consulta-saldo a34e822] chore(S-001): AGENTS.md e quality gate de pre-commit
- 21 files changed, 3013 insertions(+)
+[feat/S-001-consulta-saldo bac9564] chore(S-001): AGENTS.md e quality gate de pre-commit
+ 21 files changed, 3120 insertions(+)
 (… create mode dos 21 arquivos: skill nos dois diretórios (9 + 9), .githooks/ (2) e AGENTS.md …)</pre></dd><dt>Artefatos</dt><dd><code class="wrap">Commit no branch da story com AGENTS.md, .githooks/ e a skill nos dois diretórios.</code></dd><dt>Checkpoint</dt><dd>git status limpo, como o bmad-build exige. Daqui em diante todo commit passa pelos hooks, inclusive o do bmad-build e o amend dos trailers.</dd><dt>Doc oficial</dt><dd><a href="https://agents.md/" target="_blank" rel="noopener">AGENTS.md</a> · <a href="https://git-scm.com/docs/githooks" target="_blank" rel="noopener">githooks (pre-commit, commit-msg)</a> · <a href="https://www.conventionalcommits.org/en/v1.0.0/" target="_blank" rel="noopener">Conventional Commits</a></dd></dl></div>
 <figure class="diagram loopfig" role="img" aria-label="Loop de autocorreção: git commit, pre-commit com 14 categorias; se der FAIL e houver tentativa, o agente lê o log, corrige só a categoria e repete o commit; na 3ª falha, para e entrega ao humano"><svg class="lp" viewBox="0 0 760 262" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><marker id="lp-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="lp-head"/></marker></defs><rect class="lp-box" x="14" y="24" width="120" height="48" rx="8"/><text x="74" y="53" class="lp-t">git commit</text><rect class="lp-box" x="168" y="24" width="140" height="48" rx="8"/><text x="238" y="44" class="lp-t">pre-commit</text><text x="238" y="61" class="lp-s">14 categorias, fail-fast</text><path class="lp-dec" d="M398 18L452 48L398 78L344 48Z"/><text x="398" y="52" class="lp-t">[FAIL]?</text><rect class="lp-box" x="488" y="24" width="134" height="48" rx="8"/><text x="555" y="44" class="lp-t">commit-msg</text><text x="555" y="61" class="lp-s">Conventional Commits</text><rect class="lp-box lp-ok" x="650" y="24" width="98" height="48" rx="8"/><text x="699" y="53" class="lp-t">commit criado</text><path class="lp-dec" d="M398 128L462 162L398 196L334 162Z"/><text x="398" y="159" class="lp-t">tentativa</text><text x="398" y="175" class="lp-t">&lt; 3?</text><rect class="lp-box" x="14" y="134" width="250" height="56" rx="8"/><text x="139" y="157" class="lp-t">agente lê o log e corrige só</text><text x="139" y="175" class="lp-t">a categoria do [FAIL]</text><rect class="lp-box lp-bad" x="500" y="134" width="248" height="56" rx="8"/><text x="624" y="157" class="lp-t">para e entrega ao humano:</text><text x="624" y="175" class="lp-s">log, step que falhou e o que tentou</text><path class="lp-ar" d="M134 48H166" marker-end="url(#lp-a)"/><path class="lp-ar" d="M308 48H342" marker-end="url(#lp-a)"/><path class="lp-ar" d="M452 48H486" marker-end="url(#lp-a)"/><text x="470" y="40" class="lp-l">não</text><path class="lp-ar" d="M622 48H648" marker-end="url(#lp-a)"/><path class="lp-ar" d="M398 78V126" marker-end="url(#lp-a)"/><text x="406" y="106" class="lp-l lp-la">sim</text><path class="lp-ar" d="M334 162H266" marker-end="url(#lp-a)"/><text x="300" y="154" class="lp-l">sim</text><path class="lp-ar" d="M74 134V74" marker-end="url(#lp-a)"/><text x="82" y="108" class="lp-l lp-la">git add + mesmo commit</text><path class="lp-ar" d="M462 162H498" marker-end="url(#lp-a)"/><text x="480" y="154" class="lp-l">não</text><text x="380" y="240" class="lp-s">Nunca --no-verify, SKIP_* ou edição de .githooks/ para passar. [WARN] e [SKIP] não bloqueiam e vão para o PR.</text></svg></figure>
 <div class="step" id="passo-11"><div class="step-h"><span class="step-n">11</span><span class="step-t">Discovery: product brief</span><span class="step-f">1. Discovery</span><span class="step-gate">Gate: Negócio aceita problema e prioridade</span></div>
@@ -434,7 +434,7 @@ Story: S-001
 AI-Assisted: bmad+&lt;agente&gt;
  * [new branch]      feat/S-001-consulta-saldo -&gt; feat/S-001-consulta-saldo</pre></dd><dt>Artefatos</dt><dd><code class="wrap">Commit com brief, PRD, spine, epics.md, readiness e sprint-status.yaml.</code></dd><dt>Checkpoint</dt><dd>git status limpo.</dd><dt>Doc oficial</dt><dd><a href="https://git-scm.com/docs/git-interpret-trailers" target="_blank" rel="noopener">git interpret-trailers</a> · <a href="https://www.conventionalcommits.org/en/v1.0.0/" target="_blank" rel="noopener">Conventional Commits</a></dd></dl></div>
 <div class="step" id="passo-19"><div class="step-h"><span class="step-n">19</span><span class="step-t">Implementação: bmad-build da story 1-1</span><span class="step-f">4. Implementação</span><span class="step-gate">Gate: Aprovação do plano dentro da sessão</span></div>
-<dl class="step-d"><dt>Objetivo</dt><dd>Implementar handler, testes e verificação em uma sessão.</dd><dt>Entrada</dt><dd>Chat novo, árvore limpa, branch da story.</dd><dt>Comando exato</dt><dd><pre>/bmad-build Implementar a story 1.1 de _bmad-output/planning-artifacts/epics.md (S-001): GET /contas/{id}/saldo em Go com net/http, dados sintéticos em memória, valores em centavos, testes table-driven com httptest.</pre></dd>
+<dl class="step-d"><dt>Objetivo</dt><dd>Implementar handler, testes e verificação em uma sessão.</dd><dt>Entrada</dt><dd>Chat novo, árvore limpa, branch da story.</dd><dt>Comando exato</dt><dd><pre>/bmad-build Implementar a story 1.1 de _bmad-output/planning-artifacts/epics.md (S-001): GET /contas/{id}/saldo em Go com net/http, dados sintéticos em memória, valores em centavos, testes table-driven com httptest; main() fino que só chama run(addr), com run testado (servidor respondendo e porta ocupada) para a cobertura do pacote inteiro passar de 90%.</pre></dd>
 <dt>Resultado esperado <span class="tag-aprox">APROXIMADO</span></dt><dd><pre class="out">1. Investiga repositório e planejamento; confere árvore limpa e branch.
 2. Reporta lacunas, ações irreversíveis e footprint; se algo for sinalizado, escreve um plano e espera a sua aprovação (bloco &lt;frozen-after-approval&gt;).
 3. Implementa; grava baseline_commit; status in-progress.
@@ -450,9 +450,9 @@ git add saldo.go
 git commit -m "feat(saldo): GET /contas/{id}/saldo com dados sintéticos"</pre></dd>
 <dt>Resultado esperado <span class="tag-real">REAL</span></dt><dd><pre class="out">── Tentativa 1 ──
 [STEP -1/14] Secret Scanner — Gitleaks
-10:09AM INF 0 commits scanned.
-10:09AM INF scanned ~3072 bytes (3.07 KB) in 122ms
-10:09AM INF no leaks found
+10:21AM INF 0 commits scanned.
+10:21AM INF scanned ~4294 bytes (4.29 KB) in 113ms
+10:21AM INF no leaks found
 [PASS] Secret Scanner
 [STEP 0/14] Branch Name — &lt;tipo&gt;/S-NNN-&lt;slug&gt;
 [PASS] Branch Name
@@ -463,9 +463,9 @@ saldo.go
 
 ── Tentativa 2 ──
 [STEP -1/14] Secret Scanner — Gitleaks
-10:09AM INF 0 commits scanned.
-10:09AM INF scanned ~3069 bytes (3.07 KB) in 143ms
-10:09AM INF no leaks found
+10:21AM INF 0 commits scanned.
+10:21AM INF scanned ~4291 bytes (4.29 KB) in 136ms
+10:21AM INF no leaks found
 [PASS] Secret Scanner
 [STEP 0/14] Branch Name — &lt;tipo&gt;/S-NNN-&lt;slug&gt;
 [PASS] Branch Name
@@ -487,10 +487,10 @@ saldo.go
 [STEP 7/14] go mod tidy — higiene de módulos
 [PASS] go mod tidy
 [STEP 8/14] go test + cobertura — limiar 90%
-ok  	demo-saldo	(cached)	coverage: 88.9% of statements
-[PASS] go test — cobertura 100.0% (código de negócio, sem main.go)
+ok  	demo-saldo	0.028s	coverage: 95.5% of statements
+[PASS] go test — cobertura 95.5%
 [STEP 9/14] go test -race — data races
-ok  	demo-saldo	(cached)
+ok  	demo-saldo	1.037s
 [PASS] go test -race
 [STEP 10/14] Integration tests — fluxos completos via WireMock
 [WARN] Docker unavailable — integration tests soft-skipped
@@ -504,8 +504,8 @@ ok  	demo-saldo	(cached)
 [SKIP] Docker build (set SKIP_DOCKER=0 to enable)
 ✓ All 14 quality gates passed — committing.
 [PASS] commit-msg: Conventional Commits
-[feat/S-001-consulta-saldo 9c681e2] feat(saldo): GET /contas/{id}/saldo com dados sintéticos
- 3 files changed, 111 insertions(+)</pre></dd><dt>Artefatos</dt><dd><code class="wrap">Commit local feat(saldo) criado na 2ª tentativa.</code></dd><dt>Checkpoint</dt><dd>No máximo 3 tentativas e nenhum --no-verify na sessão. Se a 3ª falhar, o agente para e entrega log, step e o que já tentou, e a decisão passa a ser humana. Os [WARN] vão para a descrição do PR. A cobertura deu 88,9% no pacote inteiro e 100% no código de negócio sem main.go: sem a exclusão decidida no passo 08, este commit falharia no STEP 8. Os logs são reais; a escolha da correção (gofmt -w no arquivo que o log apontou) depende do modelo.</dd><dt>Doc oficial</dt><dd><a href="https://pkg.go.dev/cmd/gofmt" target="_blank" rel="noopener">gofmt</a> · <a href="https://github.com/Josemalyson/custom-skills/tree/main/pre-commit-quality-gate" target="_blank" rel="noopener">Skill pre-commit-quality-gate (repositório público)</a> · <a href="https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck" target="_blank" rel="noopener">govulncheck</a></dd></dl></div>
+[feat/S-001-consulta-saldo 8d3b7d1] feat(saldo): GET /contas/{id}/saldo com dados sintéticos
+ 4 files changed, 170 insertions(+)</pre></dd><dt>Artefatos</dt><dd><code class="wrap">Commit local feat(saldo) criado na 2ª tentativa.</code></dd><dt>Checkpoint</dt><dd>No máximo 3 tentativas e nenhum --no-verify na sessão. Se a 3ª falhar, o agente para e entrega log, step e o que já tentou, e a decisão passa a ser humana. Os [WARN] vão para a descrição do PR. A cobertura do pacote inteiro deu 95,5% com o limiar padrão de 90%, porque main() é fino e a lógica do servidor fica em run(), testada em main_test.go. Os logs são reais; a escolha da correção (gofmt -w no arquivo que o log apontou) depende do modelo.</dd><dt>Doc oficial</dt><dd><a href="https://pkg.go.dev/cmd/gofmt" target="_blank" rel="noopener">gofmt</a> · <a href="https://github.com/Josemalyson/custom-skills/tree/main/pre-commit-quality-gate" target="_blank" rel="noopener">Skill pre-commit-quality-gate (repositório público)</a> · <a href="https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck" target="_blank" rel="noopener">govulncheck</a></dd></dl></div>
 <div class="step" id="passo-21"><div class="step-h"><span class="step-n">21</span><span class="step-t">Verificação local</span><span class="step-f">5. Verificação</span></div>
 <dl class="step-d"><dt>Objetivo</dt><dd>Rodar as checagens que o CI também roda.</dd><dt>Entrada</dt><dd>Raiz do repositório.</dd><dt>Comando exato</dt><dd><pre>gofmt -l .
 go vet ./...
@@ -515,7 +515,17 @@ go build -o /tmp/demo-saldo .
 sleep 1
 curl -s localhost:8080/contas/0001/saldo
 kill %1</pre></dd>
-<dt>Resultado esperado <span class="tag-real">REAL</span></dt><dd><pre class="out">=== RUN   TestSaldoHandler
+<dt>Resultado esperado <span class="tag-real">REAL</span></dt><dd><pre class="out">=== RUN   TestRunServeAPI
+&lt;data&gt; &lt;hora&gt; demo-saldo ouvindo em 127.0.0.1:40153
+--- PASS: TestRunServeAPI (0.03s)
+=== RUN   TestRunPortaOcupada
+--- PASS: TestRunPortaOcupada (0.00s)
+=== RUN   TestSaldoHandler
+=== RUN   TestSaldoHandler/conta_com_saldo_positivo
+=== RUN   TestSaldoHandler/conta_com_saldo_negativo
+=== RUN   TestSaldoHandler/conta_inexistente
+=== RUN   TestSaldoHandler/id_inválido
+=== RUN   TestSaldoHandler/método_não_permitido
 --- PASS: TestSaldoHandler (0.00s)
     --- PASS: TestSaldoHandler/conta_com_saldo_positivo (0.00s)
     --- PASS: TestSaldoHandler/conta_com_saldo_negativo (0.00s)
@@ -523,9 +533,32 @@ kill %1</pre></dd>
     --- PASS: TestSaldoHandler/id_inválido (0.00s)
     --- PASS: TestSaldoHandler/método_não_permitido (0.00s)
 PASS
-ok  	demo-saldo	0.003s
+ok  	demo-saldo	0.029s
 &lt;data&gt; &lt;hora&gt; demo-saldo ouvindo em :8080
-{"conta_id":"0001","saldo_centavos":150000,"limite_centavos":50000,"limite_disponivel_centavos":200000}</pre></dd><dt>Artefatos</dt><dd><code class="wrap">Nenhum novo.</code></dd><dt>Checkpoint</dt><dd>gofmt e go vet sem saída; todos os casos PASS. Saída capturada com a implementação de referência do ensaio; nomes de teste variam com o código gerado.</dd><dt>Doc oficial</dt><dd><a href="https://pkg.go.dev/cmd/vet" target="_blank" rel="noopener">go vet</a> · <a href="https://pkg.go.dev/cmd/go" target="_blank" rel="noopener">go test</a> · <a href="https://go.dev/wiki/TableDrivenTests" target="_blank" rel="noopener">Go: table-driven tests</a> · <a href="https://pkg.go.dev/net/http/httptest" target="_blank" rel="noopener">net/http/httptest</a> · <a href="https://pkg.go.dev/net/http#ServeMux" target="_blank" rel="noopener">net/http ServeMux (padrões com método e {id})</a></dd></dl></div>
+{"conta_id":"0001","saldo_centavos":150000,"limite_centavos":50000,"limite_disponivel_centavos":200000}</pre></dd><dt>Artefatos</dt><dd><code class="wrap">Nenhum novo.</code></dd><dt>Checkpoint</dt><dd>gofmt e go vet sem saída; todos os casos PASS, inclusive os dois testes de run(). Saída capturada com a implementação de referência do ensaio; nomes de teste variam com o código gerado.</dd><dt>Doc oficial</dt><dd><a href="https://pkg.go.dev/cmd/vet" target="_blank" rel="noopener">go vet</a> · <a href="https://pkg.go.dev/cmd/go" target="_blank" rel="noopener">go test</a> · <a href="https://go.dev/wiki/TableDrivenTests" target="_blank" rel="noopener">Go: table-driven tests</a> · <a href="https://pkg.go.dev/net/http/httptest" target="_blank" rel="noopener">net/http/httptest</a> · <a href="https://pkg.go.dev/net/http#ServeMux" target="_blank" rel="noopener">net/http ServeMux (padrões com método e {id})</a></dd></dl></div>
+<p class="ev-inline"><b>main() fino e run() testável:</b> para a cobertura do pacote inteiro passar do limiar padrão de 90% sem exceção, o <code>main.go</code> da referência só chama <code>run(addr)</code>; <code>main_test.go</code> testa <code>run</code> servindo a API e falhando com a porta ocupada. Cobertura medida pelo hook: 95,5%.</p><pre>package main
+
+import (
+    "log"
+    "net"
+    "net/http"
+)
+
+// main fica fino: toda a lógica testável está em run.
+func main() {
+    log.Fatal(run(":8080"))
+}
+
+// run abre a porta e serve a API; só retorna com erro (porta ocupada, por exemplo).
+func run(addr string) error {
+    ln, err := net.Listen("tcp", addr)
+    if err != nil {
+        return err
+    }
+    log.Printf("demo-saldo ouvindo em %s", addr)
+    return http.Serve(ln, novoMux())
+}
+</pre>
 <div class="step" id="passo-22"><div class="step-h"><span class="step-n">22</span><span class="step-t">Code review independente</span><span class="step-f">5. Verificação</span></div>
 <dl class="step-d"><dt>Objetivo</dt><dd>Segunda revisão agentica, em chat novo, de preferência com outro modelo.</dd><dt>Entrada</dt><dd>Chat novo.</dd><dt>Comando exato</dt><dd><pre>/bmad-code-review Review the current branch against _bmad-output/implementation-artifacts/spec-1-1-&lt;slug&gt;.md</pre></dd>
 <dt>Resultado esperado <span class="tag-aprox">APROXIMADO</span></dt><dd><pre class="out">Achados com severidade (low/medium/high), roteados para patch, defer ou decision needed. Você decide se aplica os patches.</pre></dd><dt>Artefatos</dt><dd><code class="wrap">Patches aplicados (se aprovados); itens adiados em _bmad-output/implementation-artifacts/deferred-work.md</code></dd><dt>Checkpoint</dt><dd>Nenhum achado high aberto.</dd><dt>Doc oficial</dt><dd><a href="https://github.com/bmad-code-org/BMAD-METHOD/blob/V6.12/docs/build/review-a-change.md" target="_blank" rel="noopener">Review a Change</a></dd></dl></div>
